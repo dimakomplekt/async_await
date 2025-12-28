@@ -3,6 +3,16 @@
 // ESP32 Async Await Library (Header File, C version)
 // Author: dimakomplekt
 // Description: Non-blocking delay implementation using pure C for embedded use
+//
+// !!! NOTE / IMPORTANT !!! NOTE / IMPORTANT !!! NOTE / IMPORTANT !!! NOTE / IMPORTANT !!!
+//
+// Passing invalid data into any library functions will trigger execution halt (abort).
+// Users must validate time values and context structures before calling the functions,
+// using appropriate checks in their own code to prevent undesired behavior or program termination.
+//
+// !!! NOTE / IMPORTANT !!! NOTE / IMPORTANT !!! NOTE / IMPORTANT !!! NOTE / IMPORTANT !!!
+//
+// The using example could be find in the end of the C-file
 
 // =========================================================================================== INFO
 
@@ -28,7 +38,8 @@ typedef enum {
     TIME_UNIT_NS,
     TIME_UNIT_US,
     TIME_UNIT_MS,
-    TIME_UNIT_S
+    TIME_UNIT_S,
+    TIME_UNIT_MAX
     
 } time_unit_t;
 
@@ -39,7 +50,7 @@ typedef enum {
 typedef struct async_await_ctx
 {
 
-    bool initialization_status;    // Internal flag: is the timer setted and registered
+    bool initialization_status;    // Internal flag: is the timer set and registered
 
     uint32_t time_value;           // Duration in GPT ticks (scaled from user time_unit)
     time_unit_t time_unit;         // Delay duration in milliseconds
@@ -77,56 +88,95 @@ static inline async_await_ctx async_await_ctx_default(void) {
 }
 
 
-// Function: get_monotonic_time
-// Purpose: Count and return ticks value, translated to the general purpose timer ticks,
-// by the selected time value and unit
-uint64_t get_monotonic_time(time_unit_t time_unit);
+/*
+* Function: async_await_init
+*
+* Purpose: Automatically creates and initializes an async await context data on the first call.
+*
+* \param *current_await_ctx: Pointer to async_await_ctx structure to initialize.
+* \param time_value: Await duration value (numeric).
+* \param time_unit: Await duration time unit (NS, US, MS, S) by the time_unit_t enum.
+*
+* \returns
+*
+* true  -> context successfully initialized;
+*
+* false -> initialization failed (invalid arguments or internal error)
+*
+*/
+bool async_await_init(async_await_ctx *current_await_ctx, uint32_t time_value, time_unit_t time_unit);
 
 
-// Function: get_timer_ticks_value
-// Purpose: Translate the user selected time value to the ticks value
-uint64_t get_timer_ticks_value(uint32_t time_value, time_unit_t time_unit);
+/*
+* Function: async_await
+*
+* Purpose: Checks if the delay time has elapsed and switch the end_flag in the current context structure.
+*
+* \param *current_await_ctx: Pointer to the one of async_await_ctx structure (pass by &).
+* \param time_value: Await duration value (numeric).
+* \param time_unit: Await duration time unit (NS, US, MS, S) by the time_unit_t enum.
+* \param reboot: If true, the await timer will restart with new time_value and time_unit.
+*
+* \returns
+*
+* true  -> delay is over;
+* 
+* false -> still waiting
+*
+*/
+bool async_await(async_await_ctx *current_await_ctx, uint32_t time_value, time_unit_t time_unit, bool reboot);
 
 
-// Function: get_timer_ticks_value
-// Ticks convertion from unit to unit
-uint64_t convert_time_between_units(uint64_t value, time_unit_t from, time_unit_t to);
-
-
-// Function: reboot_this_timer
-// Purpose: Check if we need to reboot timer due to new time settings and reboot flag
-bool reboot_by_new_data(async_await_ctx *ctx, uint32_t time_value, time_unit_t time_unit, bool reboot);
-
-// Function: async_await_init
-// Purpose: Initializes a new async_await_ctx with given delay time
-void async_await_init(async_await_ctx *ctx, uint32_t time_value, time_unit_t time_unit);
-
-
-// Function: async_await_register
-// Purpose: Adds external timer context into global linked list to track across blocking delays
-void async_await_register(async_await_ctx *ctx);
-
-
-// Function: async_await
-// Purpose: Checks if the delay time has elapsed
-// Returns: true  -> delay is over
-//          false -> still waiting
-bool async_await(async_await_ctx *ctx, uint32_t time_value, time_unit_t time_unit, bool reboot);
-
-
-// Function: await
-// Purpose: Replaces blocking delay() and updates all registered async timers
+/*
+* Function: await
+*
+* Purpose: Non-blocking replacement for delay().
+*          Updates all registered async timers using a global time base.
+*
+* \param time_value: Await duration value (numeric).
+* \param time_unit: Await duration time unit (NS, US, MS, S) by the time_unit_t enum.
+*
+* \returns
+*
+* void
+*
+*/
 void await(uint64_t time_value, time_unit_t time_unit);
 
 
-// Function: reboot_await
-// Purpose: Force restart of async_await or await
-void reboot_await(async_await_ctx *ctx, uint32_t time_value, time_unit_t time_unit);
+/*
+* Function: reboot_await
+*
+* Purpose: Forces restart of an async await timer.
+*          Resets internal timing state and applies new duration parameters.
+*
+* \param *current_await_ctx: Pointer to async_await_ctx structure to reboot.
+* \param time_value: New await duration value (numeric).
+* \param time_unit: New await duration time unit (NS, US, MS, S) by the time_unit_t enum.
+*
+* \returns
+*
+* void
+*
+*/
+void reboot_await(async_await_ctx *current_await_ctx, uint32_t time_value, time_unit_t time_unit);
 
 
-// Function: end_await
-// Purpose: Force the async_await to reinitialize start_ticks with next call await
-void end_await(async_await_ctx *ctx);
+/*
+* Function: end_await
+*
+* Purpose: Forces async_await to finish immediately, by the flags
+*          (exploitation_status, end_flag) reset in the context structure.             
+*          On the next call, start_ticks will be reinitialized.
+*
+* \param *current_await_ctx: Pointer to async_await_ctx structure.
+*
+* \returns
+*
+* void
+*
+*/
+void end_await(async_await_ctx *current_await_ctx);
 
 
 
