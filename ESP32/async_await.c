@@ -10,6 +10,8 @@
 // Users must validate time values and context structures before calling the functions,
 // using appropriate checks in their own code to prevent undesired behavior or program termination.
 //
+// With this library you can't use standart delays! To pause execution, use library await command.
+// 
 // !!! NOTE / IMPORTANT !!! NOTE / IMPORTANT !!! NOTE / IMPORTANT !!! NOTE / IMPORTANT !!!
 //
 // The using example could be find in the end of this file
