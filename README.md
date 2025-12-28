@@ -35,6 +35,13 @@ if (async_await(&delay_1, 1200, TIME_UNIT_MS, false))
     // Your logic
 }
 ```
+
+With this library you can't use ordinary delays, if you want to pause execution, use library await command:
+
+```c
+await(4000, TIME_UNIT_MS);
+```
+
 📌 How It Works
 
 * Each delay uses a small context (timestamp, state, duration)
