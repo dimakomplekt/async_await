@@ -111,10 +111,12 @@ uint64_t convert_time_between_units(uint64_t value, time_unit_t from, time_unit_
 // Purpose: Check if we need to reboot timer due to new time settings and reboot flag
 bool reboot_by_new_data(async_await_ctx *current_await_ctx, uint32_t time_value, time_unit_t time_unit, bool reboot);
 
+
 // =========================================================================================== INNER FUNCTIONS DECLARATION
 
 
 // =========================================================================================== FUNCTIONS DEFINITION
+
 
 // =========================================================================================== EXTERN
 
@@ -310,11 +312,13 @@ void reboot_await(async_await_ctx *current_await_ctx, uint32_t time_value, time_
 // Force the async_await to reinitialize start_ticks with next call await
 void end_await(async_await_ctx *current_await_ctx)
 {
+    current_await_ctx->initialization_status = false;
     current_await_ctx->exploitation_status  = false;
     current_await_ctx->end_flag  = false;
 }
 
 // =========================================================================================== EXTERN
+
 
 // =========================================================================================== INNER
 
@@ -431,10 +435,12 @@ uint64_t convert_time_between_units(uint64_t value, time_unit_t from, time_unit_
 
 // =========================================================================================== INNER
 
+
 // =========================================================================================== API FUNCTIONS DEFINITION
 
 
 // =========================================================================================== USING EXAMPLES SECTION
+
 
 // =========================================================================================== async_await 2 diodes blinking
 
@@ -585,6 +591,7 @@ void app_main()
 
 // =========================================================================================== async_await 2 diodes blinking
 
+
 // =========================================================================================== async_await 1 diode delayed blinking ==========
 
 /*
@@ -709,5 +716,6 @@ void app_main()
 */
 
 // =========================================================================================== async_await 1 diode delayed blinking ==========
+
 
 // =========================================================================================== USING EXAMPLES SECTION
